@@ -28,13 +28,14 @@ class MLP(nn.Module):
 
 
 class AutoEncoder(pl.LightningModule):
-    def __init__(self, encoder: nn.Module, decoder: nn.Module, loss_func: Callable, optimiser_class: torch.optim.Optimizer) -> None:
+    def __init__(self, encoder: nn.Module, decoder: nn.Module, loss_func: Callable, optimiser_class: torch.optim.Optimizer, lr: float = 1e-3) -> None:
         super().__init__()
 
         self.encoder = encoder
         self.decoder = decoder
         self.loss_func = loss_func
         self.optimiser_class = optimiser_class
+        self.lr = lr
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         z = self.encoder(x)
@@ -67,4 +68,4 @@ class AutoEncoder(pl.LightningModule):
         return loss
 
     def configure_optimizers(self):
-        return self.optimiser_class(self.parameters())
+        return self.optimiser_class(self.parameters(), lr=self.lr)
