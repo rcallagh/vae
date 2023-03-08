@@ -21,7 +21,7 @@ class MLP(nn.Module):
             self._mlp.append(nn.ReLU())
 
         self._mlp.append(nn.Linear(hidden_size[-1], out_size))
-        self._mlp.append(nn.Sigmoid())
+        # self._mlp.append(nn.Sigmoid())
 
     def forward(self, x):
         return self._mlp(x)
@@ -40,7 +40,7 @@ class AutoEncoder(pl.LightningModule):
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         z = self.encoder(x)
 
-        xhat = self.decoder(z)
+        xhat = nn.functional.sigmoid(self.decoder(z))
 
         return xhat
 
