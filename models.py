@@ -31,7 +31,7 @@ class AutoEncoder(pl.LightningModule):
         self.encoder = encoder
         self.decoder = decoder
         self.loss_func = loss_func
-        self.optimser_class = optimiser_class
+        self.optimiser_class = optimiser_class
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         z = self.encoder(x)
