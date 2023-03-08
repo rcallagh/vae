@@ -57,5 +57,14 @@ class AutoEncoder(pl.LightningModule):
         self.log('loss', loss)
         return loss
 
+    def validation_step(self, batch, batch_idx):
+        x = self.prepare_batch(batch)
+
+        xhat = self(x)
+
+        loss = self.loss_func(x, xhat)
+        self.log('val_loss', loss, prog_bar=True)
+        return loss
+
     def configure_optimizers(self):
         return self.optimiser_class(self.parameters())
