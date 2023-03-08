@@ -4,7 +4,7 @@ import torch
 import torch.nn as nn
 
 class MLP(nn.Module):
-    def __init__(self, in_size: int, out_size: int, hidden_size: list[int]) -> None:
+    def __init__(self, in_size: int, out_size: int, hidden_size: "list[int]") -> None:
         super().__init__()
 
         assert len(hidden_size) > 0
