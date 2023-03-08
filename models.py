@@ -53,7 +53,7 @@ class AutoEncoder(pl.LightningModule):
 
         xhat = self(x)
 
-        loss = self.loss_func(x, xhat)
+        loss = self.loss_func(xhat, x, reduction='sum')
 
         self.log('loss', loss)
         return loss
@@ -63,7 +63,7 @@ class AutoEncoder(pl.LightningModule):
 
         xhat = self(x)
 
-        loss = self.loss_func(x, xhat)
+        loss = self.loss_func(xhat, x, reduction='sum')
         self.log('val_loss', loss, prog_bar=True)
         return loss
 
