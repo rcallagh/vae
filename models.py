@@ -42,7 +42,7 @@ class AutoEncoder(pl.LightningModule):
 
     def prepare_batch(self, batch):
         #For now, just return the data, don't use the labels
-        return batch[0]
+        return batch[0].flatten(start_dim=1, end_dim=-1)
 
     def training_step(self, batch, batch_idx):
         x = self.prepare_batch(batch)
