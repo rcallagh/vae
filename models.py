@@ -53,5 +53,5 @@ class AutoEncoder(pl.LightningModule):
         self.log('loss', loss)
         return loss
 
-    def configure_optimizers(self) -> Any:
+    def configure_optimizers(self):
         return self.optimiser_class(self.parameters())
