@@ -40,7 +40,7 @@ class AutoEncoder(pl.LightningModule):
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         z = self.encoder(x)
 
-        xhat = nn.functional.sigmoid(self.decoder(z))
+        xhat = torch.sigmoid(self.decoder(z))
 
         return xhat
 
@@ -100,7 +100,7 @@ class VariationalAutoEncoder(AutoEncoder):
 
         KLD = 0.5 * torch.sum(logvar.exp() - logvar - 1 + mu.pow(2))
 
-        loss = self.loss_func(x, xhat)
+        loss = self.loss_func(xhat, x, reduction='sum')
 
         self.log('img_loss', loss, prog_bar=True)
         self.log('kld', KLD, prog_bar=True)
@@ -114,7 +114,7 @@ class VariationalAutoEncoder(AutoEncoder):
 
         KLD = 0.5 * torch.sum(logvar.exp() - logvar - 1 + mu.pow(2))
 
-        loss = self.loss_func(x, xhat)
+        loss = self.loss_func(xhat, x, reduction='sum')
 
         self.log('val_img_loss', loss)
         self.log('val_kld', KLD)
