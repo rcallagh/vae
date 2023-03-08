@@ -14,11 +14,14 @@ class MLP(nn.Module):
         self._mlp = nn.Sequential()
         #input layer
         self._mlp.append(nn.Linear(in_size, hidden_size[0]))
+        self._mlp.append(nn.ReLU())
         #hidden layers
         for iLayer in range(len(hidden_size) - 1):
             self._mlp.append(nn.Linear(hidden_size[iLayer], hidden_size[iLayer+1]))
+            self._mlp.append(nn.ReLU())
 
         self._mlp.append(nn.Linear(hidden_size[-1], out_size))
+        self._mlp.append(nn.Sigmoid())
 
     def forward(self, x):
         return self._mlp(x)
