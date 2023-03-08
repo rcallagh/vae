@@ -69,3 +69,26 @@ class AutoEncoder(pl.LightningModule):
 
     def configure_optimizers(self):
         return self.optimiser_class(self.parameters(), lr=self.lr)
+
+
+class VariationalAutoEncoder(AutoEncoder):
+    def __init__(self, encoder: nn.Module, decoder: nn.Module, loss_func: Callable, optimiser_class: torch.optim.Optimizer, lr: float = 1e-3) -> None:
+        super().__init__(encoder=encoder, decoder=decoder, loss_func=loss_func, optimiser_class=optimiser_class, lr=lr)
+
+    def reparameterise(self, mu, logvar):
+        if self.training:
+            std = logvar.mul(0.5).exp_()
+            eps = std.new_empty(std.size()).normal_()
+            return eps.mul_(std).add_(mu)
+        else:
+            return mu
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        mulogvar = self.encoder(x)
+        mu, logvar = torch.chunk(mulogvar, 2, dim=1)
+
+        z = self.reparameterise(mu, logvar)
+
+        xhat = torch.sigmoid(self.decoder(z))
+
+        return xhat
