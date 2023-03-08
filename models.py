@@ -83,7 +83,7 @@ class VariationalAutoEncoder(AutoEncoder):
         else:
             return mu
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
+    def forward(self, x: torch.Tensor):
         mulogvar = self.encoder(x)
         mu, logvar = torch.chunk(mulogvar, 2, dim=1)
 
@@ -91,4 +91,32 @@ class VariationalAutoEncoder(AutoEncoder):
 
         xhat = torch.sigmoid(self.decoder(z))
 
-        return xhat
+        return xhat, mu, logvar
+
+    def training_step(self, batch, batch_idx):
+        x = self.prepare_batch(batch)
+
+        xhat, mu, logvar = self(x)
+
+        KLD = 0.5 * torch.sum(logvar.exp() - logvar - 1 + mu.pow(2))
+
+        loss = self.loss_func(x, xhat)
+
+        self.log('img_loss', loss)
+        self.log('kld', KLD)
+
+        return loss + KLD * 1e-3
+
+    def validation_step(self, batch, batch_idx):
+        x = self.prepare_batch(batch)
+
+        xhat, mu, logvar = self(x)
+
+        KLD = 0.5 * torch.sum(logvar.exp() - logvar - 1 + mu.pow(2))
+
+        loss = self.loss_func(x, xhat)
+
+        self.log('val_img_loss', loss)
+        self.log('val_kld', KLD)
+
+        return loss + KLD * 1e-3
