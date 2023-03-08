@@ -102,10 +102,10 @@ class VariationalAutoEncoder(AutoEncoder):
 
         loss = self.loss_func(x, xhat)
 
-        self.log('img_loss', loss)
-        self.log('kld', KLD)
+        self.log('img_loss', loss, prog_bar=True)
+        self.log('kld', KLD, prog_bar=True)
 
-        return loss + KLD * 1e-3
+        return loss + KLD
 
     def validation_step(self, batch, batch_idx):
         x = self.prepare_batch(batch)
@@ -118,5 +118,6 @@ class VariationalAutoEncoder(AutoEncoder):
 
         self.log('val_img_loss', loss)
         self.log('val_kld', KLD)
+        self.log('val_loss', loss  + KLD, prog_bar=True)
 
-        return loss + KLD * 1e-3
+        return loss + KLD
