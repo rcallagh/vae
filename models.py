@@ -41,7 +41,8 @@ class AutoEncoder(pl.LightningModule):
         return xhat
 
     def prepare_batch(self, batch):
-        return batch
+        #For now, just return the data, don't use the labels
+        return batch[0]
 
     def training_step(self, batch, batch_idx):
         x = self.prepare_batch(batch)
