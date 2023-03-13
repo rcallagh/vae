@@ -72,8 +72,9 @@ class AutoEncoder(pl.LightningModule):
 
 
 class VariationalAutoEncoder(AutoEncoder):
-    def __init__(self, encoder: nn.Module, decoder: nn.Module, loss_func: Callable, optimiser_class: torch.optim.Optimizer, lr: float = 1e-3) -> None:
+    def __init__(self, encoder: nn.Module, decoder: nn.Module, loss_func: Callable, optimiser_class: torch.optim.Optimizer, lr: float = 1e-3, use_KLD=True) -> None:
         super().__init__(encoder=encoder, decoder=decoder, loss_func=loss_func, optimiser_class=optimiser_class, lr=lr)
+        self.use_KLD = use_KLD
 
     def reparameterise(self, mu, logvar):
         if self.training:
@@ -98,26 +99,31 @@ class VariationalAutoEncoder(AutoEncoder):
 
         xhat, mu, logvar = self(x)
 
-        KLD = 0.5 * torch.sum(logvar.exp() - logvar - 1 + mu.pow(2))
 
         loss = self.loss_func(xhat, x, reduction='sum')
 
         self.log('img_loss', loss, prog_bar=True)
-        self.log('kld', KLD, prog_bar=True)
 
-        return loss + KLD
+        if self.use_KLD:
+            KLD = 0.5 * torch.sum(logvar.exp() - logvar - 1 + mu.pow(2))
+            self.log('kld', KLD, prog_bar=True)
+            loss += KLD
+
+        return loss
 
     def validation_step(self, batch, batch_idx):
         x = self.prepare_batch(batch)
 
         xhat, mu, logvar = self(x)
 
-        KLD = 0.5 * torch.sum(logvar.exp() - logvar - 1 + mu.pow(2))
-
         loss = self.loss_func(xhat, x, reduction='sum')
 
         self.log('val_img_loss', loss)
-        self.log('val_kld', KLD)
-        self.log('val_loss', loss  + KLD, prog_bar=True)
 
-        return loss + KLD
+        if self.use_KLD:
+            KLD = 0.5 * torch.sum(logvar.exp() - logvar - 1 + mu.pow(2))
+            self.log('val_kld', KLD)
+            loss += KLD
+
+        self.log('val_loss', loss, prog_bar=True)
+        return loss
