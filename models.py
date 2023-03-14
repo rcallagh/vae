@@ -72,7 +72,7 @@ class AutoEncoder(pl.LightningModule):
 
 
 class VariationalAutoEncoder(AutoEncoder):
-    def __init__(self, encoder: nn.Module, decoder: nn.Module, loss_func: Callable, optimiser_class: torch.optim.Optimizer, lr: float = 1e-3, use_KLD=True) -> None:
+    def __init__(self, encoder: nn.Module, decoder: nn.Module, loss_func: Callable, optimiser_class: torch.optim.Optimizer, lr: float = 1e-3, use_KLD=2) -> None:
         super().__init__(encoder=encoder, decoder=decoder, loss_func=loss_func, optimiser_class=optimiser_class, lr=lr)
         self.use_KLD = use_KLD
 
@@ -104,7 +104,11 @@ class VariationalAutoEncoder(AutoEncoder):
 
         self.log('img_loss', loss, prog_bar=True)
 
-        if self.use_KLD:
+        if self.use_KLD == 1:
+            KLD = 0.5 * torch.sum(logvar.exp() - logvar - 1)
+            self.log('kld', KLD, prog_bar=True)
+            loss += KLD
+        elif self.use_KLD == 2:
             KLD = 0.5 * torch.sum(logvar.exp() - logvar - 1 + mu.pow(2))
             self.log('kld', KLD, prog_bar=True)
             loss += KLD
@@ -120,9 +124,13 @@ class VariationalAutoEncoder(AutoEncoder):
 
         self.log('val_img_loss', loss)
 
-        if self.use_KLD:
-            KLD = 0.5 * torch.sum(logvar.exp() - logvar - 1 + mu.pow(2))
+        if self.use_KLD == 1:
+            KLD = 0.5 * torch.sum(logvar.exp() - logvar - 1)
             self.log('val_kld', KLD)
+            loss += KLD
+        if self.use_KLD == 2:
+            KLD = 0.5 * torch.sum(logvar.exp() - logvar - 1 + mu.pow(2))
+            self.log('kld', KLD, prog_bar=True)
             loss += KLD
 
         self.log('val_loss', loss, prog_bar=True)
